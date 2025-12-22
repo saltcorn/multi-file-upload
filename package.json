@@ -1,0 +1,13 @@
+{
+  "name": "@saltcorn/multi-file-upload",
+  "version": "0.1.0",
+  "description": "A Saltcorn plugin to upload multiple files.",
+  "main": "index.js",
+  "dependencies": {
+    "@saltcorn/markup": "^0.8.0",
+    "@saltcorn/data": "^0.8.0"
+  },
+  "author": "RUTAYISIRE MANZI Gerard Valentin",
+  "license": "MIT",
+  "repository": "github:saltcorn/multi-file-upload"
+}
