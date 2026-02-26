@@ -402,7 +402,7 @@ const upload_files = async (
       const file = Array.isArray(stored) ? stored[0] : stored;
       const newRow = {
         [parsed.fkField.name]: parentId,
-        [parsed.fileField.name]: file.field_value,
+        [parsed.fileField.name]: file.field_value || file.path_to_serve,
       };
       const result = await parsed.childTable.tryInsertRow(newRow, req.user);
       if (result?.error) throw new Error(result.error);
