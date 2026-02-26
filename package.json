@@ -1,6 +1,6 @@
 {
   "name": "@saltcorn/multi-file-upload",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Saltcorn plugin to upload multiple files.",
   "main": "index.js",
   "dependencies": {
