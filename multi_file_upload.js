@@ -50,8 +50,8 @@ const buildChildOptions = async (table) => {
   const relationOptions = child_relations.map(({ key_field, table: ctable }) =>
     optionWithName(
       `${ctable.name} ▸ ${key_field.label || key_field.name}`,
-      `${ctable.name}.${key_field.name}`
-    )
+      `${ctable.name}.${key_field.name}`,
+    ),
   );
   const childTables = {};
   for (const rel of child_relations) {
@@ -71,7 +71,7 @@ const buildChildOptions = async (table) => {
   }
   const unique = (list) =>
     list.filter(
-      (opt, ix, arr) => arr.findIndex((o) => o.value === opt.value) === ix
+      (opt, ix, arr) => arr.findIndex((o) => o.value === opt.value) === ix,
     );
   return {
     relationOptions,
@@ -98,9 +98,8 @@ const configuration_workflow = (req) =>
         form: async (context) => {
           const table = Table.findOne({ id: context.table_id });
           await table.getFields();
-          const { relationOptions, fileFieldOptions } = await buildChildOptions(
-            table
-          );
+          const { relationOptions, fileFieldOptions } =
+            await buildChildOptions(table);
           const roles = await User.get_roles();
           if (!relationOptions.length) {
             return new Form({
@@ -109,7 +108,7 @@ const configuration_workflow = (req) =>
                   input_type: "section_header",
                   label: req.__(
                     "No child relations available. Add a Key field in another table that references %s first.",
-                    table.name
+                    table.name,
                   ),
                 },
               ],
@@ -130,7 +129,7 @@ const configuration_workflow = (req) =>
                 attributes: { options: relationOptions },
                 sublabel: req.__(
                   "Foreign key field on the child table pointing back to %s",
-                  table.name
+                  table.name,
                 ),
               },
               {
@@ -140,7 +139,7 @@ const configuration_workflow = (req) =>
                 required: true,
                 attributes: { options: fileFieldOptions },
                 sublabel: req.__(
-                  "Field on the child table that stores the uploaded file"
+                  "Field on the child table that stores the uploaded file",
                 ),
               },
               {
@@ -148,7 +147,7 @@ const configuration_workflow = (req) =>
                 label: req.__("Upload folder"),
                 type: "String",
                 sublabel: req.__(
-                  "Optional sub-folder inside the Files area (defaults to root)"
+                  "Optional sub-folder inside the Files area (defaults to root)",
                 ),
               },
               {
@@ -186,7 +185,7 @@ const configuration_workflow = (req) =>
                 type: "Bool",
                 showIf: { allow_delete: true },
                 sublabel: req.__(
-                  "If enabled, deleting a child row also deletes the uploaded file from the file store."
+                  "If enabled, deleting a child row also deletes the uploaded file from the file store.",
                 ),
               },
             ],
@@ -201,7 +200,7 @@ const resolveConfig = async (table_id, configuration) => {
   if (!configuration.child_relation)
     throw new InvalidConfiguration("Missing child relation");
   const { table: childTableName, field: fkFieldName } = parseFieldRef(
-    configuration.child_relation
+    configuration.child_relation,
   );
   const childTable = Table.findOne({ name: childTableName });
   if (!childTable)
@@ -210,13 +209,13 @@ const resolveConfig = async (table_id, configuration) => {
   const fkField = childTable.getField(fkFieldName);
   if (!fkField)
     throw new InvalidConfiguration(
-      `Cannot find foreign key field ${fkFieldName} on ${childTable.name}`
+      `Cannot find foreign key field ${fkFieldName} on ${childTable.name}`,
     );
   const { field: fileFieldName } = parseFieldRef(configuration.file_field);
   const fileField = childTable.getField(fileFieldName);
   if (!isFileField(fileField))
     throw new InvalidConfiguration(
-      `Field ${fileFieldName} on ${childTable.name} must be a File field`
+      `Field ${fileFieldName} on ${childTable.name} must be a File field`,
     );
   return {
     parentTable,
@@ -233,13 +232,15 @@ const buildListHtml = (rows, childTable, fileField, cfg, req, copy) => {
   if (!rows || rows.length === 0)
     return div(
       { class: "sc-mfu-empty text-muted", "data-mfu-empty": "true" },
-      copy.emptyText
+      copy.emptyText,
     );
   const allowDelete = cfg.allow_delete !== false;
   return rows
     .map((row) => {
       const filepath = row[fileField.name];
-      const servePath = File.pathToServeUrl(filepath || "");
+      const servePath = File.pathToServeUrl
+        ? File.pathToServeUrl(filepath || "")
+        : `/files/serve/${filepath}`;
       const fileName = filepath ? basename(filepath) : req.__("File");
       const meta = row.updated_at || row.created_at;
       return div(
@@ -251,14 +252,14 @@ const buildListHtml = (rows, childTable, fileField, cfg, req, copy) => {
           { class: "me-2" },
           a(
             { href: servePath, target: "_blank", class: "sc-mfu-link" },
-            fileName
+            fileName,
           ),
           meta
             ? span(
                 { class: "text-muted small ms-2" },
-                req.__("Updated %s", new Date(meta).toLocaleString())
+                req.__("Updated %s", new Date(meta).toLocaleString()),
               )
-            : ""
+            : "",
         ),
         allowDelete
           ? button(
@@ -268,9 +269,9 @@ const buildListHtml = (rows, childTable, fileField, cfg, req, copy) => {
                 "data-mfu-delete": row[childTable.pk_name],
                 title: req.__("Delete"),
               },
-              i({ class: "fas fa-trash" })
+              i({ class: "fas fa-trash" }),
             )
-          : ""
+          : "",
       );
     })
     .join("");
@@ -302,7 +303,7 @@ const renderControls = (configuration, req, copy) => {
       span({ class: "form-label fw-semibold" }, req.__("Files")),
       div(
         { class: ["sc-mfu-input", showDrop && "d-none"] },
-        `<input type="file" class="form-control" data-mfu-input="true" multiple />`
+        `<input type="file" class="form-control" data-mfu-input="true" multiple />`,
       ),
       div(
         {
@@ -310,16 +311,16 @@ const renderControls = (configuration, req, copy) => {
           "data-mfu-dropzone": "true",
         },
         i({ class: "fas fa-cloud-upload-alt me-2" }),
-        span(copy.dropLabel)
+        span(copy.dropLabel),
       ),
-      div({ class: "text-muted small mt-2", "data-mfu-status": "true" })
+      div({ class: "text-muted small mt-2", "data-mfu-status": "true" }),
     ) +
     div(
       {
         class: "alert alert-warning mt-3 d-none",
         "data-mfu-disabled": "true",
       },
-      copy.disabledText
+      copy.disabledText,
     )
   );
 };
@@ -353,7 +354,7 @@ const run = async (table_id, viewname, configuration, state, extra) => {
     fileField,
     configuration,
     req,
-    copy
+    copy,
   );
   const clientCfg = buildClientConfig(viewname, parentId, configuration, copy);
   return div(
@@ -366,7 +367,7 @@ const run = async (table_id, viewname, configuration, state, extra) => {
     configuration.show_existing !== false
       ? div({ class: "sc-mfu-list", "data-mfu-list": "true" }, listHtml)
       : "",
-    renderControls(configuration, req, copy)
+    renderControls(configuration, req, copy),
   );
 };
 
@@ -375,7 +376,7 @@ const upload_files = async (
   viewname,
   configuration,
   body,
-  { req }
+  { req },
 ) => {
   try {
     const parsed = await resolveConfig(table_id, configuration);
@@ -387,7 +388,7 @@ const upload_files = async (
     const uploads = Array.isArray(uploadsRaw) ? uploadsRaw : [uploadsRaw];
     const parentRow = await parsed.parentTable.getRow(
       { [parsed.parentPk]: parentId },
-      { forUser: req.user }
+      { forUser: req.user },
     );
     if (!parentRow) return { json: { error: req.__("Parent row not found") } };
     const inserted = [];
@@ -396,7 +397,7 @@ const upload_files = async (
         upload,
         req.user?.id,
         configuration.file_min_role || 1,
-        configuration.target_folder || "/"
+        configuration.target_folder || "/",
       );
       const file = Array.isArray(stored) ? stored[0] : stored;
       const newRow = {
@@ -418,7 +419,7 @@ const upload_files = async (
         parsed.fileField,
         configuration,
         req,
-        copy
+        copy,
       );
     }
     return {
@@ -438,7 +439,7 @@ const delete_file = async (
   viewname,
   configuration,
   body,
-  { req }
+  { req },
 ) => {
   try {
     const parsed = await resolveConfig(table_id, configuration);
@@ -469,7 +470,7 @@ const delete_file = async (
         parsed.fileField,
         configuration,
         req,
-        copy
+        copy,
       );
     }
     return { json: { success: true, listHtml } };
